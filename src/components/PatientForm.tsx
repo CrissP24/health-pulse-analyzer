@@ -16,12 +16,16 @@ import { UserPlus } from 'lucide-react';
 
 const patientSchema = z.object({
   fullName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  cedula: z.string().min(10, 'La cédula debe tener al menos 10 caracteres'),
   age: z.coerce.number().min(1, 'La edad debe ser mayor a 0').max(120, 'La edad debe ser menor a 120'),
   gender: z.enum(['male', 'female', 'other'], {
     required_error: 'Selecciona un género',
   }),
-  weight: z.coerce.number().min(10, 'El peso debe ser mayor a 10 kg').max(500, 'El peso debe ser menor a 500 kg'),
-  height: z.coerce.number().min(50, 'La estatura debe ser mayor a 50 cm').max(250, 'La estatura debe ser menor a 250 cm'),
+  birthDate: z.string().min(1, 'La fecha de nacimiento es requerida'),
+  phone: z.string().min(10, 'El teléfono debe tener al menos 10 caracteres'),
+  address: z.string().min(5, 'La dirección debe tener al menos 5 caracteres'),
+  emergencyContact: z.string().min(2, 'El contacto de emergencia es requerido'),
+  emergencyPhone: z.string().min(10, 'El teléfono de emergencia debe tener al menos 10 caracteres'),
 });
 
 type PatientFormData = z.infer<typeof patientSchema>;
@@ -37,35 +41,31 @@ export default function PatientForm({ onPatientAdded }: PatientFormProps) {
     resolver: zodResolver(patientSchema),
     defaultValues: {
       fullName: '',
+      cedula: '',
       age: undefined,
       gender: undefined,
-      weight: undefined,
-      height: undefined,
+      birthDate: '',
+      phone: '',
+      address: '',
+      emergencyContact: '',
+      emergencyPhone: '',
     },
   });
 
   const onSubmit = (data: PatientFormData) => {
-    const bmi = calculateBMI(data.weight, data.height);
-    const bmiCategory = getBMICategory(bmi);
-    
     const patient: Patient = {
       id: crypto.randomUUID(),
       fullName: data.fullName,
+      cedula: data.cedula,
       age: data.age,
       gender: data.gender,
-      weight: data.weight,
-      height: data.height,
-      bmi,
-      bmiCategory,
+      birthDate: data.birthDate,
+      phone: data.phone,
+      address: data.address,
+      emergencyContact: data.emergencyContact,
+      emergencyPhone: data.emergencyPhone,
       registrationDate: new Date().toISOString(),
-      history: [{
-        id: crypto.randomUUID(),
-        date: new Date().toISOString(),
-        weight: data.weight,
-        height: data.height,
-        bmi,
-        bmiCategory,
-      }],
+      medicalHistory: [],
     };
 
     addPatient(patient);
@@ -74,7 +74,7 @@ export default function PatientForm({ onPatientAdded }: PatientFormProps) {
     
     toast({
       title: "Paciente registrado",
-      description: `${patient.fullName} ha sido registrado exitosamente con IMC ${bmi}`,
+      description: `${patient.fullName} ha sido registrado exitosamente`,
     });
   };
 
@@ -86,7 +86,7 @@ export default function PatientForm({ onPatientAdded }: PatientFormProps) {
           Registro de Paciente
         </CardTitle>
         <CardDescription className="text-primary-foreground/80">
-          Complete los datos del paciente para calcular automáticamente su IMC
+          Complete los datos del paciente para el registro en el sistema
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
@@ -105,8 +105,22 @@ export default function PatientForm({ onPatientAdded }: PatientFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cedula"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cédula</FormLabel>
+                    <FormControl>
+                      <Input placeholder="1234567890" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <FormField
                 control={form.control}
                 name="age"
@@ -114,13 +128,15 @@ export default function PatientForm({ onPatientAdded }: PatientFormProps) {
                   <FormItem>
                     <FormLabel>Edad</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="25" {...field} />
+                      <Input type="number" placeholder="8" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="gender"
@@ -143,31 +159,75 @@ export default function PatientForm({ onPatientAdded }: PatientFormProps) {
                   </FormItem>
                 )}
               />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
               <FormField
                 control={form.control}
-                name="weight"
+                name="birthDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Peso (kg)</FormLabel>
+                    <FormLabel>Fecha de nacimiento</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.1" placeholder="70.5" {...field} />
+                      <Input type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="height"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estatura (cm)</FormLabel>
+                    <FormLabel>Teléfono</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="175" {...field} />
+                      <Input placeholder="0987654321" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dirección</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Calle Principal 123" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="emergencyContact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contacto de emergencia</FormLabel>
+                    <FormControl>
+                      <Input placeholder="María García (Madre)" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="emergencyPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono de emergencia</FormLabel>
+                    <FormControl>
+                      <Input placeholder="0987654321" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

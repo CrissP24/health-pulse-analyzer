@@ -1,27 +1,56 @@
 export interface Patient {
   id: string;
   fullName: string;
+  cedula: string;
   age: number;
   gender: 'male' | 'female' | 'other';
-  weight: number; // kg
-  height: number; // cm
-  bmi: number;
-  bmiCategory: BMICategory;
+  birthDate: string;
+  phone: string;
+  address: string;
+  emergencyContact: string;
+  emergencyPhone: string;
   registrationDate: string;
-  history?: PatientRecord[];
+  medicalHistory?: MedicalRecord[];
 }
 
-export interface PatientRecord {
+export interface MedicalRecord {
   id: string;
   date: string;
   weight: number;
   height: number;
   bmi: number;
-  bmiCategory: BMICategory;
+  bmiCategory: ChildBMICategory;
+  percentile: number;
+  notes?: string;
+  doctorId: string;
+  doctorName: string;
+}
+
+export interface BMICalculation {
+  id: string;
+  patientId: string;
+  date: string;
+  weight: number;
+  height: number;
+  age: number;
+  bmi: number;
+  category: ChildBMICategory;
+  percentile: number;
+  doctorId: string;
+  doctorName: string;
   notes?: string;
 }
 
 export type BMICategory = 'underweight' | 'normal' | 'overweight' | 'obesity';
+export type ChildBMICategory = 'bajo_peso' | 'riesgo_desnutricion' | 'peso_saludable' | 'sobrepeso';
+
+export interface ChildBMITable {
+  age: number;
+  bajoPeso: number;
+  riesgoDesnutricion: { min: number; max: number };
+  pesoSaludable: { min: number; max: number };
+  sobrepeso: number;
+}
 
 export interface PatientFilters {
   gender?: string;

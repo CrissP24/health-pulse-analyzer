@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Patient, PatientFilters } from '@/types/patient';
-import { getBMICategoryInfo, formatBMI } from '@/utils/bmi';
-import { Eye, Users, Search, Filter } from 'lucide-react';
+import { Eye, Users, Search, Filter, Phone, MapPin, Calendar } from 'lucide-react';
 
 interface PatientListProps {
   patients: Patient[];
@@ -20,7 +19,10 @@ export default function PatientList({ patients, onViewPatient }: PatientListProp
 
   const filteredPatients = patients.filter(patient => {
     // Search filter
-    if (searchTerm && !patient.fullName.toLowerCase().includes(searchTerm.toLowerCase())) {
+    if (searchTerm && 
+        !patient.fullName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !patient.cedula.includes(searchTerm) &&
+        !patient.phone.includes(searchTerm)) {
       return false;
     }
     
@@ -36,27 +38,19 @@ export default function PatientList({ patients, onViewPatient }: PatientListProp
       }
     }
     
-    // BMI category filter
-    if (filters.bmiCategory && patient.bmiCategory !== filters.bmiCategory) {
-      return false;
-    }
-    
     return true;
   });
 
-  const getBMIBadgeColor = (category: string) => {
-    const info = getBMICategoryInfo(category as any);
-    switch (category) {
-      case 'underweight':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'normal':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'overweight':
-        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'obesity':
-        return 'bg-red-100 text-red-800 hover:bg-red-200';
+  const getGenderBadgeColor = (gender: string) => {
+    switch (gender) {
+      case 'male':
+        return 'bg-blue-100 text-blue-800';
+      case 'female':
+        return 'bg-pink-100 text-pink-800';
+      case 'other':
+        return 'bg-purple-100 text-purple-800';
       default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -92,7 +86,7 @@ export default function PatientList({ patients, onViewPatient }: PatientListProp
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nombre..."
+                placeholder="Buscar por nombre, cédula o teléfono..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -117,20 +111,30 @@ export default function PatientList({ patients, onViewPatient }: PatientListProp
             </Select>
             
             <Select
-              value={filters.bmiCategory || 'all'}
-              onValueChange={(value) => 
-                setFilters(prev => ({ ...prev, bmiCategory: value === 'all' ? undefined : value as any }))
-              }
+              value={filters.ageRange ? 'custom' : 'all'}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setFilters(prev => ({ ...prev, ageRange: undefined }));
+                } else if (value === 'children') {
+                  setFilters(prev => ({ ...prev, ageRange: { min: 3, max: 10 } }));
+                } else if (value === 'teens') {
+                  setFilters(prev => ({ ...prev, ageRange: { min: 11, max: 17 } }));
+                } else if (value === 'adults') {
+                  setFilters(prev => ({ ...prev, ageRange: { min: 18, max: 65 } }));
+                } else if (value === 'seniors') {
+                  setFilters(prev => ({ ...prev, ageRange: { min: 65, max: 120 } }));
+                }
+              }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Categoría IMC" />
+                <SelectValue placeholder="Rango de edad" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                <SelectItem value="underweight">Bajo peso</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="overweight">Sobrepeso</SelectItem>
-                <SelectItem value="obesity">Obesidad</SelectItem>
+                <SelectItem value="all">Todas las edades</SelectItem>
+                <SelectItem value="children">Niños (3-10 años)</SelectItem>
+                <SelectItem value="teens">Adolescentes (11-17 años)</SelectItem>
+                <SelectItem value="adults">Adultos (18-65 años)</SelectItem>
+                <SelectItem value="seniors">Adultos mayores (65+ años)</SelectItem>
               </SelectContent>
             </Select>
             
@@ -158,12 +162,12 @@ export default function PatientList({ patients, onViewPatient }: PatientListProp
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead>Nombre</TableHead>
+                  <TableHead>Cédula</TableHead>
                   <TableHead>Edad</TableHead>
                   <TableHead>Género</TableHead>
-                  <TableHead>Peso</TableHead>
-                  <TableHead>Estatura</TableHead>
-                  <TableHead>IMC</TableHead>
-                  <TableHead>Categoría</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Dirección</TableHead>
+                  <TableHead>Registro</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -171,15 +175,30 @@ export default function PatientList({ patients, onViewPatient }: PatientListProp
                 {filteredPatients.map((patient) => (
                   <TableRow key={patient.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-medium">{patient.fullName}</TableCell>
+                    <TableCell className="font-mono text-sm">{patient.cedula}</TableCell>
                     <TableCell>{patient.age} años</TableCell>
-                    <TableCell>{getGenderLabel(patient.gender)}</TableCell>
-                    <TableCell>{patient.weight} kg</TableCell>
-                    <TableCell>{patient.height} cm</TableCell>
-                    <TableCell className="font-mono">{formatBMI(patient.bmi)}</TableCell>
                     <TableCell>
-                      <Badge className={getBMIBadgeColor(patient.bmiCategory)}>
-                        {getBMICategoryInfo(patient.bmiCategory).label}
+                      <Badge className={getGenderBadgeColor(patient.gender)}>
+                        {getGenderLabel(patient.gender)}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3 text-gray-400" />
+                        {patient.phone}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 max-w-xs truncate">
+                        <MapPin className="h-3 w-3 text-gray-400" />
+                        <span className="truncate">{patient.address}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(patient.registrationDate).toLocaleDateString()}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Button

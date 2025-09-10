@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Patient } from '@/types/patient';
-import { getBMICategoryInfo, formatBMI } from '@/utils/bmi';
-import { User, Calendar, Weight, Ruler, Activity, ArrowLeft, FileText } from 'lucide-react';
+import { User, Calendar, Phone, MapPin, ArrowLeft, FileText, Heart, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PDFExport from './PDFExport';
@@ -17,9 +16,7 @@ interface PatientDetailProps {
 }
 
 export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
-  const categoryInfo = getBMICategoryInfo(patient.bmiCategory);
-  
-  const historyData = patient.history?.map((record, index) => ({
+  const historyData = patient.medicalHistory?.map((record, index) => ({
     index: index + 1,
     date: format(new Date(record.date), 'dd/MM/yy', { locale: es }),
     bmi: record.bmi,
@@ -35,16 +32,14 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
     }
   };
 
-  const getBMIBadgeColor = (category: string) => {
-    switch (category) {
-      case 'underweight':
+  const getGenderBadgeColor = (gender: string) => {
+    switch (gender) {
+      case 'male':
         return 'bg-blue-100 text-blue-800';
-      case 'normal':
-        return 'bg-green-100 text-green-800';
-      case 'overweight':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'obesity':
-        return 'bg-red-100 text-red-800';
+      case 'female':
+        return 'bg-pink-100 text-pink-800';
+      case 'other':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -91,23 +86,25 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
                 <User className="h-4 w-4" />
                 <span className="text-sm">Género</span>
               </div>
-              <p className="text-2xl font-bold">{getGenderLabel(patient.gender)}</p>
+              <Badge className={getGenderBadgeColor(patient.gender)}>
+                {getGenderLabel(patient.gender)}
+              </Badge>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Weight className="h-4 w-4" />
-                <span className="text-sm">Peso</span>
+                <Phone className="h-4 w-4" />
+                <span className="text-sm">Teléfono</span>
               </div>
-              <p className="text-2xl font-bold">{patient.weight} kg</p>
+              <p className="text-lg font-medium">{patient.phone}</p>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Ruler className="h-4 w-4" />
-                <span className="text-sm">Estatura</span>
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm">Cédula</span>
               </div>
-              <p className="text-2xl font-bold">{patient.height} cm</p>
+              <p className="text-lg font-mono">{patient.cedula}</p>
             </div>
           </div>
           
@@ -116,18 +113,10 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Activity className="h-4 w-4" />
-                <span className="text-sm">Índice de Masa Corporal</span>
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm">Dirección</span>
               </div>
-              <div className="flex items-center gap-4">
-                <p className="text-4xl font-bold text-primary">{formatBMI(patient.bmi)}</p>
-                <Badge className={getBMIBadgeColor(patient.bmiCategory)} style={{ backgroundColor: categoryInfo.color + '20', color: categoryInfo.color }}>
-                  {categoryInfo.label}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Rango normal: 18.5 - 24.9 kg/m²
-              </p>
+              <p className="text-lg">{patient.address}</p>
             </div>
             
             <div className="space-y-4">
@@ -137,6 +126,29 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
               </div>
               <p className="text-lg">
                 {format(new Date(patient.registrationDate), "dd 'de' MMMM 'de' yyyy", { locale: es })}
+              </p>
+            </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <UserCheck className="h-4 w-4" />
+                <span className="text-sm">Contacto de emergencia</span>
+              </div>
+              <p className="text-lg font-medium">{patient.emergencyContact}</p>
+              <p className="text-sm text-gray-600">{patient.emergencyPhone}</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Heart className="h-4 w-4" />
+                <span className="text-sm">Fecha de nacimiento</span>
+              </div>
+              <p className="text-lg">
+                {format(new Date(patient.birthDate), "dd 'de' MMMM 'de' yyyy", { locale: es })}
               </p>
             </div>
           </div>
@@ -190,7 +202,7 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
       )}
 
       {/* History Table */}
-      {patient.history && patient.history.length > 0 && (
+      {patient.medicalHistory && patient.medicalHistory.length > 0 && (
         <Card className="shadow-medical">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -203,7 +215,7 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {patient.history.map((record, index) => (
+              {patient.medicalHistory.map((record, index) => (
                 <div key={record.id} className="border rounded-lg p-4 bg-muted/30">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-medium">Registro #{index + 1}</h4>
@@ -222,14 +234,16 @@ export default function PatientDetail({ patient, onBack }: PatientDetailProps) {
                     </div>
                     <div>
                       <span className="text-muted-foreground">IMC:</span>
-                      <p className="font-medium">{formatBMI(record.bmi)}</p>
+                      <p className="font-medium">{record.bmi} kg/m²</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Categoría:</span>
-                      <Badge className={getBMIBadgeColor(record.bmiCategory)}>
-                        {getBMICategoryInfo(record.bmiCategory).label}
-                      </Badge>
+                      <span className="text-muted-foreground">Percentil:</span>
+                      <p className="font-medium">{record.percentile}%</p>
                     </div>
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-muted-foreground text-sm">Doctor:</span>
+                    <p className="text-sm font-medium">{record.doctorName}</p>
                   </div>
                   {record.notes && (
                     <div className="mt-3 pt-3 border-t">
