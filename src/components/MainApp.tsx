@@ -5,6 +5,11 @@ import PatientForm from './PatientForm';
 import PatientList from './PatientList';
 import PatientDetail from './PatientDetail';
 import BMICalculator from './BMICalculator';
+import EnhancedBMICalculator from './EnhancedBMICalculator';
+import NutritionalDashboard from './NutritionalDashboard';
+import CatalogManager from './CatalogManager';
+import ClinicalFollowUp from './ClinicalFollowUp';
+import AdvancedReports from './AdvancedReports';
 import AppointmentManager from './AppointmentManager';
 import DoctorManager from './DoctorManager';
 import ConsultationRoomManager from './ConsultationRoomManager';
@@ -85,11 +90,23 @@ const MainApp: React.FC<MainAppProps> = ({ onLogout }) => {
       
       case 'bmi-calculator':
         return (
-          <BMICalculator 
+          <EnhancedBMICalculator 
             patients={patients} 
             onPatientUpdate={handlePatientUpdate}
           />
         );
+      
+      case 'nutritional-dashboard':
+        return <NutritionalDashboard patients={patients} />;
+      
+      case 'catalogs':
+        return <CatalogManager />;
+      
+      case 'followup':
+        return <ClinicalFollowUp patients={patients} />;
+      
+      case 'advanced-reports':
+        return <AdvancedReports patients={patients} />;
       
       case 'appointments':
         return (

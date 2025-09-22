@@ -15,15 +15,25 @@ export interface Patient {
 
 export interface MedicalRecord {
   id: string;
-  date: string;
+  patientId: string;
+  measurementDate: string;
   weight: number;
   height: number;
   bmi: number;
-  bmiCategory: ChildBMICategory;
+  nutritionalStatus: 'red' | 'yellow' | 'green';
+  alertLevel: 'critical' | 'warning' | 'info';
   percentile: number;
   notes?: string;
-  doctorId: string;
-  doctorName: string;
+  professionalId: string;
+  professionalName: string;
+  createdAt: string;
+  updatedAt: string;
+  // RF-6: Auditoría
+  auditTrail: {
+    createdBy: string;
+    updatedBy?: string;
+    reason?: string;
+  };
 }
 
 export interface BMICalculation {

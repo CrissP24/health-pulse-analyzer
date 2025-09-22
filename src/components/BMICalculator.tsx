@@ -15,7 +15,6 @@ import { Calculator, User, Calendar, FileText, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MedicalHistory from './MedicalHistory';
 import GrowthChart from './GrowthChart';
-import PatientDebug from './PatientDebug';
 
 interface BMICalculatorProps {
   patients: Patient[];
@@ -128,9 +127,6 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ patients, onPatientUpdate
           </div>
         </CardContent>
       </Card>
-
-      {/* Debug Component - Remove in production */}
-      <PatientDebug patients={patients} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator Form */}

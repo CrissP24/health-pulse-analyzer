@@ -11,7 +11,12 @@ import {
   User as UserIcon,
   LogOut,
   Heart,
-  FileText
+  FileText,
+  TrendingUp,
+  Settings,
+  BarChart3,
+  Stethoscope,
+  ClipboardList
 } from 'lucide-react';
 import { getCurrentUser, logout } from '@/utils/auth';
 
@@ -27,12 +32,16 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, onLog
 
   const menuItems = [
     { id: 'dashboard', label: 'Centro Medico', icon: Home },
+    { id: 'nutritional-dashboard', label: 'Panel Nutricional', icon: BarChart3 },
+    { id: 'patients', label: 'Pacientes', icon: Users },
+    { id: 'bmi-calculator', label: 'Evaluación Nutricional', icon: Calculator },
+    { id: 'followup', label: 'Seguimiento Clínico', icon: Stethoscope },
+    { id: 'catalogs', label: 'Catálogos', icon: Settings },
+    { id: 'advanced-reports', label: 'Reportes Avanzados', icon: ClipboardList },
     { id: 'appointments', label: 'Citas', icon: Calendar },
     { id: 'doctors', label: 'Medicos', icon: UserCheck },
-    { id: 'patients', label: 'Pacientes', icon: Users },
     { id: 'consultation-rooms', label: 'Consultorios', icon: Building2 },
-    { id: 'bmi-calculator', label: 'Calculo IMC', icon: Calculator },
-    { id: 'reports', label: 'Reportes', icon: FileText },
+    { id: 'reports', label: 'Reportes Básicos', icon: FileText },
     { id: 'users', label: 'Usuario', icon: UserIcon },
   ];
 
